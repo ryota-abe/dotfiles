@@ -14,12 +14,12 @@ set hlsearch
 set wrapscan
 set scrolloff=4
 set tabstop=4
-set noexpandtab
+set expandtab
+set shiftwidth=4
 set autoindent
 set backspace=indent,eol,start
 set showmatch
 set wildmenu
-set directory=~/.vim/tmp
 set fileformats=unix,dos,mac
 set ambiwidth=double
 set clipboard=unnamed
@@ -28,53 +28,77 @@ set iminsert=0 imsearch=0
 set noimcmdline
 set shortmess+=I
 set laststatus=2
-
-"dein Scripts-----------------------------
-if &compatible
-  set nocompatible               " Be iMproved
+set diffopt=filler,vertical
+set fillchars=vert:\ ,fold:-
+set termguicolors
+set noswapfile
+set hidden
+if has('vim_starting')
+  let &t_SI .= "\e[6 q"
+  let &t_EI .= "\e[2 q"
+  let &t_SR .= "\e[4 q"
 endif
 
-" Required:
-set runtimepath+=~/.cache/dein/repos/github.com/Shougo/dein.vim
+"------------------------------------------------------------
+"dein.vim
+let s:dein_dir = expand('~/.cache/dein')
+let s:dein_repo_dir = s:dein_dir . '/repos/github.com/Shougo/dein.vim'
+if &runtimepath !~# '/dein.vim'
+  if !isdirectory(s:dein_repo_dir)
+    execute '!git clone https://github.com/Shougo/dein.vim' s:dein_repo_dir
+  endif
+  set runtimepath^=~/.cache/dein/repos/github.com/Shougo/dein.vim
+endif
+if dein#load_state(s:dein_dir)
+  call dein#begin(s:dein_dir)
 
-" Required:
-if dein#load_state('~/.cache/dein')
-  call dein#begin('~/.cache/dein')
-
-  " Let dein manage dein
-  " Required:
-  call dein#add('~/.cache/dein/repos/github.com/Shougo/dein.vim')
-
-  " Add or remove your plugins here like this:
-  call dein#add('altercation/vim-colors-solarized')
-  call dein#add('itchyny/lightline.vim')
-  call dein#add('airblade/vim-gitgutter')
+  call dein#add('tpope/vim-surround')
+  call dein#add('tpope/vim-repeat')
   call dein#add('mattn/emmet-vim')
-  call dein#add('bronson/vim-trailing-whitespace')
   call dein#add('scrooloose/nerdtree')
   call dein#add('ctrlpvim/ctrlp.vim')
   call dein#add('yuttie/comfortable-motion.vim')
 
-  " Required:
+  " appearance
+  call dein#add('lifepillar/vim-solarized8')
+  call dein#add('itchyny/lightline.vim')
+  call dein#add('itchyny/vim-gitbranch')
+  call dein#add('airblade/vim-gitgutter')
+  call dein#add('bronson/vim-trailing-whitespace')
+
   call dein#end()
   call dein#save_state()
 endif
-
-" Required:
 filetype plugin indent on
 syntax enable
-
-" If you want to install not installed plugins on startup.
 if dein#check_install()
   call dein#install()
 endif
-"End dein Scripts-------------------------
+"------------------------------------------------------------
 
-set noshowmode " for lightline
-set signcolumn=yes " for gitgutter
+"ctrlp.vim
+let g:ctrlp_user_command = ['.git', 'cd %s && git ls-files -co --exclude-standard']
+
+"lightline
+set noshowmode
+let g:lightline = {
+    \ 'colorscheme': 'solarized',
+    \ 'active': {
+    \   'left': [ [ 'mode', 'paste' ],
+    \             [ 'gitbranch', 'readonly', 'filename', 'modified' ] ]
+    \ },
+    \ 'component_function': {
+    \   'gitbranch': 'gitbranch#name'
+    \ },
+\ }
+
+"gitgutter
+set signcolumn=yes
 
 "nerdtree
 let NERDTreeShowHidden=1
+let g:NERDTreeDirArrowExpandable  = "\u25b8"
+let g:NERDTreeDirArrowCollapsible = "\u25be"
 
 "comfortable-motion.vim
 let g:comfortable_motion_friction = 160.0
@@ -82,25 +106,27 @@ let g:comfortable_motion_air_drag = 4.0
 nnoremap <silent> <S-Down> :call comfortable_motion#flick(100)<CR>
 nnoremap <silent> <S-Up> :call comfortable_motion#flick(-100)<CR>
 
-colorscheme solarized
-set t_Co=256
-set fillchars=vert:\ ,fold:-
+"ctrlp.vim
+let g:ctrlp_max_files=0
 
-set diffopt=filler,vertical
-hi DiffAdd    ctermbg=235 ctermfg=108 cterm=reverse guibg=#262626 guifg=#87af87 gui=reverse "green
-hi DiffDelete ctermbg=235 ctermfg=131 cterm=reverse guibg=#8c4c4c guifg=#af5f5f gui=reverse "red
-hi DiffText   ctermbg=235 ctermfg=208 cterm=reverse guibg=#262626 guifg=#ff8700 gui=reverse "orange
+"colorscheme
+let g:solarized_italics=0
+colorscheme solarized8
+set background=dark
+hi DiffAdd    ctermbg=235 ctermfg=108 cterm=reverse guibg=#262626 guifg=#87af87 gui=reverse
+hi DiffDelete ctermbg=235 ctermfg=131 cterm=reverse guibg=#8c4c4c guifg=#af5f5f gui=reverse
+hi DiffText   ctermbg=235 ctermfg=208 cterm=reverse guibg=#262626 guifg=#ff8700 gui=reverse
 
 "mappings
 let mapleader = "\<Space>"
 nnoremap <Leader>e :NERDTreeToggle<CR>
-nnoremap <Leader>w :w<CR>
 nnoremap <F3> :cn<CR>
 nnoremap <S-F3> :cp<CR>
-nnoremap <ESC><ESC> :noh<CR>
+nnoremap <silent> <ESC><ESC> :noh<CR>
 command! -nargs=0 CD cd %:p:h
 
-"GUI OPTIONS
+"GUI
 set guioptions-=T "hide toolbar
 set guioptions-=t "no tearoff-menu
-set guifont=Myrica_M:h12:cDEFAULT
+set guifont=HackGen:h12:cDEFAULT
+set rop=type:directx,renmode:5
