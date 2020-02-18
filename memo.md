@@ -14,30 +14,30 @@ When the line number is 0, it is evaluated as falsy, so I changed it to compare 
  - Zettlr version: Latest develop
 
 
+# Writing target info is not updated
 
-# IME problem
+## Description
 
-    font-family: inherit;
-    font-size: inherit;
-    line-height: inherit;
-    height: 1.4375em !important;
-    bottom: -1.4375em !important;
-    transform: scaleY(1.1); // Workaround to correctly render negative value positioning
+Writing-target-info tooltip in the file list is not updated when saving the file.
+The trigger is probably this commit: ["Fixed FileList glitches"](https://github.com/Zettlr/Zettlr/commit/5ce31d43dd3a9ad58bdccf0df7a0cde53d3c1921).
 
-The size of the characters in the hidden textarea must match the size of the characters actually displayed.
-Therefore, I added the following style:
-```less
-    font-family: inherit;
-    font-size: inherit;
-    line-height: inherit;
-```
+## Reproducing
 
-Next, make sure that the vertical size and position of the textarea is always correct.
-But Chrome looks buggy with negative position calculations:
-```less
-    height: 1.4375em !important;
-    bottom: -1.4375em !important;
-    transform: scaleY(1.1); // Workaround to correctly render negative value positioning
-```
+1. Set writing target to arbitrary file.
+2. Open the file and type (or delete) some words.
+3. `Ctrl-s`
+4. Hover the writing target indicator in the file list.
 
-At least at the moment, the above workaround is effective:
+## Expected behaviour
+
+The correct word count should be displayed in the tooltip.
+
+## Platform
+
+ - OS and version: Windows 10 Home 1903
+ - Zettlr Version: 1.6.0-beta.4
+ - Screen Resolution: 1366x768
+
+## Additional Information
+
+
