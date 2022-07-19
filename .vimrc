@@ -37,7 +37,19 @@ nnoremap <silent> <ESC><ESC> :noh<CR>
 nnoremap <C-p> <Plug>AirlineSelectPrevTab
 nnoremap <C-n> <Plug>AirlineSelectNextTab
 nnoremap <Leader><Leader> <Plug>(lsp-hover)
-nnoremap <Leader>e :Fern . -drawer -toggle<CR>
+" fern
+nnoremap <silent> <Leader>e :Fern . -drawer -toggle<CR>
+"lsp
+inoremap <expr> <Tab> pumvisible() ? "\<C-n>" : "\<Tab>"
+imap <c-space> <Plug>(asyncomplete_force_refresh)
+" vim-commentary
+xmap <c-/>  <Plug>Commentary
+omap <c-/>  <Plug>Commentary
+nmap <c-/>  <Plug>CommentaryLine
+" comfortable-motion.vim
+nnoremap <silent> <S-Down> :call comfortable_motion#flick(100)<CR>
+nnoremap <silent> <S-Up> :call comfortable_motion#flick(-100)<CR>
+
 
 if has('win32') || has('win64')
   if empty(glob(expand('~/vimfiles/autoload/plug.vim')))
@@ -86,24 +98,15 @@ augroup FernGroup
 augroup END
 
 " lsp
-inoremap <expr> <Tab> pumvisible() ? "\<C-n>" : "\<Tab>"
-imap <c-space> <Plug>(asyncomplete_force_refresh)
 let g:lsp_diagnostics_signs_error = {'text': ''}
 let g:lsp_diagnostics_signs_warning = {'text': ''}
 let g:lsp_diagnostics_signs_hint = {'text': ''}
 let g:lsp_document_code_action_signs_hint = {'text': ''}
 let g:lsp_diagnostics_float_cursor = 1
 
-" vim-commentary
-xmap <c-/>  <Plug>Commentary
-omap <c-/>  <Plug>Commentary
-nmap <c-/>  <Plug>CommentaryLine
-
 " comfortable-motion.vim
 let g:comfortable_motion_friction = 160.0
 let g:comfortable_motion_air_drag = 4.0
-nnoremap <silent> <S-Down> :call comfortable_motion#flick(100)<CR>
-nnoremap <silent> <S-Up> :call comfortable_motion#flick(-100)<CR>
 
 " vim-airline
 set noshowmode
