@@ -9,9 +9,9 @@ set belloff=all
 set ignorecase
 set smartcase
 set hlsearch
-set tabstop=4
+set tabstop=2
 set expandtab
-set shiftwidth=4
+set shiftwidth=2
 set autoindent
 set fileformats=unix,dos,mac
 set clipboard=unnamed
@@ -34,14 +34,12 @@ endif
 
 let mapleader = "\<Space>"
 nnoremap <silent> <ESC><ESC> :noh<CR>
-nnoremap <C-p> <Plug>AirlineSelectPrevTab
-nnoremap <C-n> <Plug>AirlineSelectNextTab
-nnoremap <Leader><Leader> <Plug>(lsp-hover)
+nnoremap <F3> :cn<CR>
+nnoremap <S-F3> :cp<CR>
+nnoremap <c-h> <Plug>AirlineSelectPrevTab
+nnoremap <c-l> <Plug>AirlineSelectNextTab
 " fern
-nnoremap <silent> <Leader>e :Fern . -drawer -toggle<CR>
-"lsp
-inoremap <expr> <Tab> pumvisible() ? "\<C-n>" : "\<Tab>"
-imap <c-space> <Plug>(asyncomplete_force_refresh)
+nnoremap <silent> <Leader>e :Fern . -drawer -toggle<CR>30<c-w>|
 " vim-commentary
 xmap <c-/>  <Plug>Commentary
 omap <c-/>  <Plug>Commentary
@@ -49,22 +47,40 @@ nmap <c-/>  <Plug>CommentaryLine
 " comfortable-motion.vim
 nnoremap <silent> <S-Down> :call comfortable_motion#flick(100)<CR>
 nnoremap <silent> <S-Up> :call comfortable_motion#flick(-100)<CR>
+" vim-easy-align
+xmap ga <Plug>(EasyAlign)
+nmap ga <Plug>(EasyAlign)
 
+function! g:ToggleTerminal() abort
+  if empty(term_list())
+    execute 'terminal'
+    execute 'resize 16'
+  else
+    let bufnr = term_list()[0]
+    if getbufinfo(bufnr)[0].hidden
+      execute term_getsize(bufnr)[0] . 'new'
+      execute 'buffer + ' bufnr
+    else
+      call win_gotoid(win_findbuf(bufnr)[0])
+    endif
+  endif
+endfunction
+nmap <c-@> :call ToggleTerminal()<CR>
+tnoremap <c-@> <c-w>:hide<CR>
 
 if has('win32') || has('win64')
   if empty(glob(expand('~/vimfiles/autoload/plug.vim')))
       execute '!curl -fLo '.expand('~').'/vimfiles/autoload/plug.vim --create-dirs'
                   \ 'https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
+      execute 'PlugInstall --sync | source $MYVIMRC'
   endif
 else
   if empty(glob('~/.vim/autoload/plug.vim'))
       silent !curl -fLo ~/.vim/autoload/plug.vim --create-dirs
                   \ https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+      execute 'PlugInstall --sync | source $MYVIMRC'
   endif
 endif
-
-" autocmd VimEnter * if len(filter(values(g:plugs), '!isdirectory(v:val.dir)'))
-"             \| PlugInstall --sync | source $MYVIMRC
 
 call plug#begin()
 Plug 'tpope/vim-surround'
@@ -84,6 +100,8 @@ Plug 'prabirshrestha/asyncomplete.vim'
 Plug 'prabirshrestha/asyncomplete-lsp.vim'
 Plug 'ryanoasis/vim-devicons'
 Plug 'lambdalisue/glyph-palette.vim'
+Plug 'ctrlpvim/ctrlp.vim'
+Plug 'junegunn/vim-easy-align'
 call plug#end()
 
 " colorscheme
@@ -97,12 +115,41 @@ augroup FernGroup
   autocmd FileType fern setlocal norelativenumber | setlocal nonumber | call glyph_palette#apply()
 augroup END
 
+"ctrlp.vim
+let g:ctrlp_user_command = ['.git', 'cd %s && git ls-files -co --exclude-standard']
+let g:ctrlp_cmd = 'CtrlPMixed'
+let g:ctrlp_by_filename = 1
+
 " lsp
 let g:lsp_diagnostics_signs_error = {'text': ''}
 let g:lsp_diagnostics_signs_warning = {'text': ''}
 let g:lsp_diagnostics_signs_hint = {'text': ''}
 let g:lsp_document_code_action_signs_hint = {'text': ''}
 let g:lsp_diagnostics_float_cursor = 1
+function! s:on_lsp_buffer_enabled() abort
+  setlocal omnifunc=lsp#complete
+  setlocal signcolumn=yes
+  if exists('+tagfunc') | setlocal tagfunc=lsp#tagfunc | endif
+  nmap <buffer> gd <plug>(lsp-definition)
+  nmap <buffer> gs <plug>(lsp-document-symbol-search)
+  nmap <buffer> gS <plug>(lsp-workspace-symbol-search)
+  nmap <buffer> gr <plug>(lsp-references)
+  nmap <buffer> gi <plug>(lsp-implementation)
+  nmap <buffer> gt <plug>(lsp-type-definition)
+  nmap <buffer> <F2> <plug>(lsp-rename)
+  nmap <buffer> [g <plug>(lsp-previous-diagnostic)
+  nmap <buffer> ]g <plug>(lsp-next-diagnostic)
+  nmap <buffer> K <plug>(lsp-hover)
+  nmap <buffer> <c-k> <plug>(lsp-peek-definition)
+  nnoremap <buffer> <expr> <c-u> pumvisible() ? lsp#scroll(-4) : comfortable_motion#flick(-100)
+  nnoremap <buffer> <expr> <c-d> pumvisible() ? lsp#scroll(+4) : comfortable_motion#flick(100)
+  imap <buffer> <c-space> <Plug>(asyncomplete_force_refresh)
+endfunction
+augroup lsp_install
+  autocmd!
+  " call s:on_lsp_buffer_enabled only for languages that has the server registered.
+  autocmd User lsp_buffer_enabled call s:on_lsp_buffer_enabled()
+augroup END
 
 " comfortable-motion.vim
 let g:comfortable_motion_friction = 160.0
@@ -137,7 +184,7 @@ if (&encoding == 'utf-8') && exists('*setcellwidths') && has('vim_starting')
   let xs += [[0x21d2, 0x21d2, 2]] " ⇒
   let xs += [[0x21d4, 0x21d4, 2]] " ⇔
   let xs += [[0x2266, 0x2267, 2]] " ≦≧
-  let xs += [[0x23fb, 0x23fe, 2]] " ⏻⏼⏽⏾Power Symbols
+  let xs += [[0x23fb, 0x23fe, 1]] " ⏻⏼⏽⏾ Power Symbols
   let xs += [[0x2460, 0x246f, 2]] " ①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯
   let xs += [[0x2470, 0x247f, 2]] " ⑰⑱⑲⑳⑴⑵⑶⑷⑸⑹⑺⑻⑼⑽⑾⑿
   let xs += [[0x2480, 0x248f, 2]] " ⒀⒁⒂⒃⒄⒅⒆⒇⒈⒉⒊⒋⒌⒍⒎⒏
@@ -148,7 +195,7 @@ if (&encoding == 'utf-8') && exists('*setcellwidths') && has('vim_starting')
   let xs += [[0x24d0, 0x24df, 2]] " ⓐⓑⓒⓓⓔⓕⓖⓗⓘⓙⓚⓛⓜⓝⓞⓟ
   let xs += [[0x24e0, 0x24ef, 2]] " ⓠⓡⓢⓣⓤⓥⓦⓧⓨⓩ⓪⓫⓬⓭⓮⓯
   let xs += [[0x24f0, 0x24ff, 2]] " ⓰⓱⓲⓳⓴⓵⓶⓷⓸⓹⓺⓻⓼⓽⓾⓿
-  " let xs += [[0x2500, 0x257f, 2]] " https://en.wikipedia.org/wiki/Box_Drawing
+  let xs += [[0x2500, 0x257f, 2]] " ─━│┃┄┅┆┇┈┉┊┋┌┍┎┏ ～ ╰╱╲╳╴╵╶╷╸╹╺╻╼╽╾╿ 罫線
   let xs += [[0x25a0, 0x25a1, 2]] " ■□
   let xs += [[0x25b2, 0x25b3, 2]] " ▲△
   let xs += [[0x25bc, 0x25bd, 2]] " ▼▽
@@ -178,23 +225,23 @@ if (&encoding == 'utf-8') && exists('*setcellwidths') && has('vim_starting')
   let xs += [[0x2750, 0x2752, 2]] " ❐❑❒
   let xs += [[0x2756, 0x2756, 2]] " ❖
   let xs += [[0x2758, 0x275e, 2]] " ❘❙❚❛❜❝❞
-  let xs += [[0x2761, 0x276f, 2]] " ❡❢❣❤❥❦❧❨❩❪❫❬❭❮❯
-  let xs += [[0x2770, 0x277f, 2]] " ❰❱❲❳❴❵❶❷❸❹❺❻❼❽❾❿
+  let xs += [[0x2761, 0x2767, 2]] " ❡❢❣❤❥❦❧
+  let xs += [[0x2768, 0x2775, 1]] " ❨❩❪❫❬❭❮❯❰❱❲❳❴❵
+  let xs += [[0x2776, 0x277f, 2]] " ❶❷❸❹❺❻❼❽❾❿
   let xs += [[0x2780, 0x278f, 2]] " ➀➁➂➃➄➅➆➇➈➉➊➋➌➍➎➏
   let xs += [[0x2790, 0x2794, 2]] " ➐➑➒➓➔
-  let xs += [[0x2798, 0x279f, 2]] " ➘➙➚➛➜➝➞➟
-  let xs += [[0x27f5, 0x27f7, 2]] " ⟵⟶⟷
+  let xs += [[0x2798, 0x279f, 1]] " ➘➙➚➛➜➝➞➟
+  let xs += [[0x27f5, 0x27f7, 1]] " ⟵⟶⟷
   let xs += [[0x2b05, 0x2b0d, 2]] " ⬅⬆⬇⬈⬉⬊⬋⬌⬍
-  let xs += [[0x2b58, 0x2b58, 2]] " Power Symbols
+  let xs += [[0x2b58, 0x2b58, 2]] " ⭘ Power Symbols
   let xs += [[0x303f, 0x303f, 2]] " 〿
   let xs += [[0xe000, 0xe00a, 2]] " Pomicons
-  " let xs += [[0xe0a0, 0xe0a2, 2]] " Powerline Symbols
-  " let xs += [[0xe0a3, 0xe0a3, 2]] " Powerline Extra Symbols
-  " let xs += [[0xe0b0, 0xe0b3, 2]] " Powerline Symbols
-  " let xs += [[0xe0b4, 0xe0c8, 2]] " Powerline Extra Symbols
-  " let xs += [[0xe0ca, 0xe0ca, 2]] " Powerline Extra Symbols
-  " let xs += [[0xe0cc, 0xe0d4, 2]] " Powerline Extra Symbols
-  let xs += [[0xe200, 0xe2a9, 2]] " Font Awesome Extension
+  let xs += [[0xe0a0, 0xe0a3, 1]] " 
+  let xs += [[0xe0b0, 0xe0b7, 1]] " 
+  let xs += [[0xe0b8, 0xe0c8, 2]] " 
+  let xs += [[0xe0ca, 0xe0ca, 2]] " 
+  let xs += [[0xe0cc, 0xe0d4, 2]] " 
+  let xs += [[0xe200, 0xe2a9, 2]] "  ... Font Awesome Extension
   let xs += [[0xe300, 0xe3e3, 2]] " Weather
   let xs += [[0xe5fa, 0xe62e, 2]] " Custom + Seti
   let xs += [[0xe700, 0xe7c5, 2]] " Devicons
