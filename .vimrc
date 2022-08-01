@@ -1,9 +1,9 @@
-scriptencoding utf-8
 set encoding=utf-8
+scriptencoding utf-8
 
 source $VIMRUNTIME/defaults.vim
 set number
-exec "set list listchars=tab:\uFFEB\uFF65"
+set list listchars=tab:￫･
 set nowrap
 set belloff=all
 set ignorecase
@@ -16,8 +16,8 @@ set autoindent
 set fileformats=unix,dos,mac
 set clipboard=unnamed
 set iminsert=0 imsearch=0
-set shortmess+=I " don't give the intro message when starting Vim
-set laststatus=2 " display status line always
+set shortmess+=I
+set laststatus=2
 set diffopt=filler,vertical
 set fillchars=vert:\ ,fold:-
 if v:version >= 900
@@ -32,24 +32,25 @@ if has('vim_starting')
   let &t_SR .= "\e[4 q"
 endif
 
-let mapleader = "\<Space>"
-nnoremap <silent> <ESC><ESC> :noh<CR>
-nnoremap <F3> :cn<CR>
-nnoremap <S-F3> :cp<CR>
-nnoremap <c-h> <Plug>AirlineSelectPrevTab
-nnoremap <c-l> <Plug>AirlineSelectNextTab
-" fern
-nnoremap <silent> <Leader>e :Fern . -drawer -toggle<CR>30<c-w>|
+let g:mapleader = "\<Space>"
+nnoremap <silent> <Esc><Esc> <Cmd>nohlsearch<CR>
+nnoremap <F3> <Cmd>cnext<CR>
+nnoremap <S-F3> <Cmd>cprev<CR>
+nnoremap <C-h> <Plug>AirlineSelectPrevTab
+nnoremap <C-l> <Plug>AirlineSelectNextTab
+
 " vim-commentary
-xmap <c-/>  <Plug>Commentary
-omap <c-/>  <Plug>Commentary
-nmap <c-/>  <Plug>CommentaryLine
+xnoremap <C-/> <Plug>Commentary
+onoremap <C-/> <Plug>Commentary
+nnoremap <C-/> <Plug>CommentaryLine
+
 " comfortable-motion.vim
-nnoremap <silent> <S-Down> :call comfortable_motion#flick(100)<CR>
-nnoremap <silent> <S-Up> :call comfortable_motion#flick(-100)<CR>
+nnoremap <silent> <S-Down> <Cmd>call comfortable_motion#flick(100)<CR>
+nnoremap <silent> <S-Up> <Cmd>call comfortable_motion#flick(-100)<CR>
+
 " vim-easy-align
-xmap ga <Plug>(EasyAlign)
-nmap ga <Plug>(EasyAlign)
+xnoremap ga <Plug>(EasyAlign)
+nnoremap ga <Plug>(EasyAlign)
 
 function! g:ToggleTerminal() abort
   if empty(term_list())
@@ -65,8 +66,8 @@ function! g:ToggleTerminal() abort
     endif
   endif
 endfunction
-nmap <c-@> :call ToggleTerminal()<CR>
-tnoremap <c-@> <c-w>:hide<CR>
+nnoremap <silent> <C-@> <Cmd>call ToggleTerminal()<CR>
+tnoremap <silent> <C-@> <Cmd>hide<CR>
 
 if has('win32') || has('win64')
   if empty(glob(expand('~/vimfiles/autoload/plug.vim')))
@@ -102,6 +103,7 @@ Plug 'ryanoasis/vim-devicons'
 Plug 'lambdalisue/glyph-palette.vim'
 Plug 'ctrlpvim/ctrlp.vim'
 Plug 'junegunn/vim-easy-align'
+Plug 'markonm/traces.vim'
 call plug#end()
 
 " colorscheme
@@ -110,17 +112,26 @@ set background=dark
 
 " fern
 let g:fern#renderer = "nerdfont"
+nnoremap <silent> <Leader>e <Cmd>Fern . -drawer -toggle<CR>30<C-w>|
+function! s:init_fern() abort
+  setlocal norelativenumber
+  setlocal nonumber
+  nmap <buffer><nowait> <Esc> <Cmd>hide<CR>
+  nmap <buffer><nowait> <Leader>e <Cmd>hide<CR>
+  call glyph_palette#apply()
+endfunction
 augroup FernGroup
   autocmd!
-  autocmd FileType fern setlocal norelativenumber | setlocal nonumber | call glyph_palette#apply()
+  autocmd FileType fern call s:init_fern()
 augroup END
 
-"ctrlp.vim
+" ctrlp.vim
 let g:ctrlp_user_command = ['.git', 'cd %s && git ls-files -co --exclude-standard']
 let g:ctrlp_cmd = 'CtrlPMixed'
 let g:ctrlp_by_filename = 1
 
 " lsp
+let g:lsp_log_verbose=1 | let g:lsp_log_file = expand('~/lsp.log')
 let g:lsp_diagnostics_signs_error = {'text': ''}
 let g:lsp_diagnostics_signs_warning = {'text': ''}
 let g:lsp_diagnostics_signs_hint = {'text': ''}
@@ -140,10 +151,8 @@ function! s:on_lsp_buffer_enabled() abort
   nmap <buffer> [g <plug>(lsp-previous-diagnostic)
   nmap <buffer> ]g <plug>(lsp-next-diagnostic)
   nmap <buffer> K <plug>(lsp-hover)
-  nmap <buffer> <c-k> <plug>(lsp-peek-definition)
-  nnoremap <buffer> <expr> <c-u> pumvisible() ? lsp#scroll(-4) : comfortable_motion#flick(-100)
-  nnoremap <buffer> <expr> <c-d> pumvisible() ? lsp#scroll(+4) : comfortable_motion#flick(100)
-  imap <buffer> <c-space> <Plug>(asyncomplete_force_refresh)
+  nmap <buffer> <C-k> <plug>(lsp-peek-definition)
+  imap <buffer> <C-Space> <Plug>(asyncomplete_force_refresh)
 endfunction
 augroup lsp_install
   autocmd!
@@ -238,9 +247,9 @@ if (&encoding == 'utf-8') && exists('*setcellwidths') && has('vim_starting')
   let xs += [[0xe000, 0xe00a, 2]] " Pomicons
   let xs += [[0xe0a0, 0xe0a3, 1]] " 
   let xs += [[0xe0b0, 0xe0b7, 1]] " 
-  let xs += [[0xe0b8, 0xe0c8, 2]] " 
-  let xs += [[0xe0ca, 0xe0ca, 2]] " 
-  let xs += [[0xe0cc, 0xe0d4, 2]] " 
+  let xs += [[0xe0b8, 0xe0c8, 1]] " 
+  let xs += [[0xe0ca, 0xe0ca, 1]] " 
+  let xs += [[0xe0cc, 0xe0d4, 1]] " 
   let xs += [[0xe200, 0xe2a9, 2]] "  ... Font Awesome Extension
   let xs += [[0xe300, 0xe3e3, 2]] " Weather
   let xs += [[0xe5fa, 0xe62e, 2]] " Custom + Seti
