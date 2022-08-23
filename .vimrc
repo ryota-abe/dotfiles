@@ -25,14 +25,14 @@ endif
 set termguicolors
 set noswapfile
 set hidden
-if has('vim_starting')
-  let &t_SI .= "\e[6 q"
-  let &t_EI .= "\e[2 q"
-  let &t_SR .= "\e[4 q"
-endif
-set foldtext=s:FoldText()
+" if has('vim_starting')
+"   let &t_SI .= "\e[6 q"
+"   let &t_EI .= "\e[2 q"
+"   let &t_SR .= "\e[4 q"
+" endif
 set foldmethod=syntax
 set foldlevelstart=99
+set foldtext=s:FoldText()
 function! s:FoldText() abort
   let s:line = getline(v:foldstart)
   if s:line[0:0] == ' '
@@ -47,6 +47,8 @@ nnoremap <silent> <Esc><Esc> <Cmd>redraw!<CR><Cmd>nohlsearch<CR>
 
 nnoremap <F3> <Cmd>cnext<CR>
 nnoremap <S-F3> <Cmd>cprev<CR>
+
+
 
 command! -nargs=0 CD cd %:p:h
 
@@ -103,6 +105,8 @@ Plug 'ctrlpvim/ctrlp.vim'
 Plug 'mattn/ctrlp-matchfuzzy'
 Plug 'junegunn/vim-easy-align'
 Plug 'markonm/traces.vim'
+Plug 'previm/previm'
+Plug 'tyru/open-browser.vim'
 call plug#end()
 
 " colorscheme
@@ -121,6 +125,7 @@ nnoremap ga <Plug>(EasyAlign)
 
 " fern
 let g:fern#renderer = "nerdfont"
+let g:fern#default_hidden=1
 nnoremap <silent> <Leader>e <Cmd>Fern . -drawer -toggle<CR>30<C-w>|
 function! s:init_fern() abort
   nnoremap <buffer><nowait> e <Nop>
@@ -204,6 +209,9 @@ nnoremap <C-l> <Plug>AirlineSelectNextTab
 
 " vim-fugitive
 nnoremap <Leader>g :silent<Space>Ggrep<Space>""<Bar>cw<Left><Left><Left><Left>
+
+" previm
+let g:previm_show_header=0
 
 runtime ambiwidth_Cica.vim
 
